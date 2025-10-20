@@ -56,7 +56,13 @@ public class CatalogoDoacoes {
                 int validadeInt = Integer.parseInt(validade);
                 int quantidadeInt = Integer.parseInt(quantidade);
                 double valorDouble = Double.parseDouble(valor);
-                TipoPerecivel tipoEnum = TipoPerecivel.valueOf(tipo.toUpperCase());
+                TipoPerecivel tipoEnum;
+
+                if (TipoPerecivel.tipoExiste(tipo)) {
+                    tipoEnum = TipoPerecivel.valueOf(tipo.toUpperCase());
+                } else {
+                    throw new IllegalArgumentException("2:ERRO: tipo inválido");
+                }
 
                 if(!doadores.existeDoadorComEmail(email))
                     throw new IllegalArgumentException ("2:ERRO:doador inexistente.");
@@ -75,8 +81,7 @@ public class CatalogoDoacoes {
                 System.out.println("2: " + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + validade);
 
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.format("Erro de E/S: %s%n", e);
         } catch (IllegalArgumentException e) {
             System.err.format("Erro de E/S: %s%n", e);
@@ -130,8 +135,7 @@ public class CatalogoDoacoes {
                 System.out.println("3: " + descricao + ", " + valor + ", " + quantidade + ", " + tipo);
 
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.format("Erro de E/S: %s%n", e);
         } catch (IllegalArgumentException e) {
             System.err.format("Erro de E/S: %s%n", e);
@@ -153,7 +157,7 @@ public class CatalogoDoacoes {
                     var tipo = p.getTipoPerecivel();
                     var validade = p.getValidade();
 
-                    System.out.println("5:" + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + validade + ", " + nome + ", " + email);
+                    System.out.println("5: " + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + validade + ", " + nome + ", " + email);
                 }
 
                 if (d instanceof Duravel D) {
@@ -164,7 +168,7 @@ public class CatalogoDoacoes {
                     var email = D.getDoador().getEmail();
                     var tipo = D.getTipoDuravel();
 
-                    System.out.println("5:" + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + nome + ", " + email);
+                    System.out.println("5: " + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + nome + ", " + email);
                 }
             }
         } catch (IllegalArgumentException e) {
@@ -213,8 +217,7 @@ public class CatalogoDoacoes {
             }
             if (!achouDoador)
                 throw new IllegalArgumentException("7: Nenhum doador encontrado");
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.format("Erro de E/S: %s%n", e);
         } catch (IllegalArgumentException e) {
             System.err.format("Erro de E/S: %s%n", e);
@@ -246,8 +249,44 @@ public class CatalogoDoacoes {
                     System.err.println(e.getMessage());
                 }
             }
+        } catch (IOException e) {
+            System.err.format("Erro de E/S: %s%n", e);
         }
-        catch (IOException e) {
+    }
+
+    public void maiorQuantidadePerecivel () {
+        // escreve o caminho do path, separado por virgula para ser multi S.O
+        Path path = Paths.get("recursos","dadosentrada.txt");
+        try (BufferedReader br = Files.newBufferedReader(path,
+                // define o charset
+                Charset.forName("UTF-8"))) {
+            String linha = null;
+            if (!TipoDuravel.tipoExiste(linha)) {
+                int maiorQuantidade = 0;
+                Perecivel doacaoMaiorQuantidade = null;
+                while ((linha = br.readLine()) != null) {
+                    //boolean ehPerecivel = false;
+                    /*if (!TipoDuravel.tipoExiste(linha))
+                        throw new IllegalArgumentException("9: ERRO: tipo invalido.");*/
+
+                    for (Doacao d : doacoes) {
+                        if (d instanceof Perecivel p) {
+                            if (p.getQuantidade() > maiorQuantidade) {
+                                doacaoMaiorQuantidade = p;
+                                maiorQuantidade = d.getQuantidade();
+                            }
+                        }
+                    }
+                }
+                if (maiorQuantidade == 0) {
+                    throw new IllegalArgumentException("9: ERRO: nenhuma doacao localizada.");
+                } else {
+                    System.out.println("9: " + doacaoMaiorQuantidade.getDescricao() + ", " + doacaoMaiorQuantidade.getValor() + ", " + doacaoMaiorQuantidade.getQuantidade() + ", " + doacaoMaiorQuantidade.getTipoPerecivel() + ", " + doacaoMaiorQuantidade.getValidade() + ", " + doacaoMaiorQuantidade.getDoador().getNome() + ", " + doacaoMaiorQuantidade.getDoador().getEmail());
+                }
+            }
+        } catch (IOException e) {
+            System.err.format("Erro de E/S: %s%n", e);
+        } catch (IllegalArgumentException e) {
             System.err.format("Erro de E/S: %s%n", e);
         }
     }
