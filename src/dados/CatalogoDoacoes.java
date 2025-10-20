@@ -78,6 +78,8 @@ public class CatalogoDoacoes {
         }
         catch (IOException e) {
             System.err.format("Erro de E/S: %s%n", e);
+        } catch (IllegalArgumentException e) {
+            System.err.format("Erro de E/S: %s%n", e);
         }
     }
 
@@ -131,37 +133,44 @@ public class CatalogoDoacoes {
         }
         catch (IOException e) {
             System.err.format("Erro de E/S: %s%n", e);
+        } catch (IllegalArgumentException e) {
+            System.err.format("Erro de E/S: %s%n", e);
         }
     }
 
     public void mostraDoacoes() {
-        if (doacoes.isEmpty())
-            throw new IllegalArgumentException("5:ERRO:nenhuma doacao cadastrada.");
+        try{
+            if (doacoes.isEmpty())
+                throw new IllegalArgumentException("5:ERRO:nenhuma doacao cadastrada.");
 
-        for (Doacao d : doacoes) {
-            if (d instanceof Perecivel p) {
-                var descricao = p.getDescricao();
-                var valor = p.getValor();
-                var quantidade = p.getQuantidade();
-                var email = p.getDoador().getEmail();
-                var nome = p.getDoador().getNome();
-                var tipo = p.getTipoPerecivel();
-                var validade = p.getValidade();
+            for (Doacao d : doacoes) {
+                if (d instanceof Perecivel p) {
+                    var descricao = p.getDescricao();
+                    var valor = p.getValor();
+                    var quantidade = p.getQuantidade();
+                    var email = p.getDoador().getEmail();
+                    var nome = p.getDoador().getNome();
+                    var tipo = p.getTipoPerecivel();
+                    var validade = p.getValidade();
 
-                System.out.println("5:" + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + validade + ", " + nome + ", " + email);
+                    System.out.println("5:" + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + validade + ", " + nome + ", " + email);
+                }
+
+                if (d instanceof Duravel D) {
+                    var descricao = D.getDescricao();
+                    var valor = D.getValor();
+                    var quantidade = D.getQuantidade();
+                    var nome = D.getDoador().getNome();
+                    var email = D.getDoador().getEmail();
+                    var tipo = D.getTipoDuravel();
+
+                    System.out.println("5:" + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + nome + ", " + email);
+                }
             }
-
-            if (d instanceof Duravel D) {
-                var descricao = D.getDescricao();
-                var valor = D.getValor();
-                var quantidade = D.getQuantidade();
-                var nome = D.getDoador().getNome();
-                var email = D.getDoador().getEmail();
-                var tipo = D.getTipoDuravel();
-
-                System.out.println("5:" + descricao + ", " + valor + ", " + quantidade + ", " + tipo + ", " + nome + ", " + email);
-            }
+        } catch (IllegalArgumentException e) {
+            System.err.format("Erro de E/S: %s%n", e);
         }
+
     }
 
     public void doacaoPorDoador() {
@@ -171,20 +180,25 @@ public class CatalogoDoacoes {
                 // define o charset
                 Charset.forName("UTF-8"))) {
             String linha = null;
+            boolean achouDoador = false;
             while ((linha = br.readLine()) != null) {
 
                 boolean ehDoador = false;
                 for (Doador d : doadores.getDoadores()) {
-                    if (linha.equals(d.getNome()))
+                    if (linha.equals(d.getNome())) {
                         ehDoador = true;
+                        achouDoador = true;
+                    }
                 }
 
                 if (ehDoador == true) {
                     // aqui dentro é o que ele vai fazer a cada palavra do separador
                     String nome = linha;
+                    boolean temDoacao = false;
 
                     for (Doacao d : doacoes) {
                         if (d.getDoador().getNome().equals(nome)) {
+                            temDoacao = true;
                             if (d instanceof Perecivel p)
                                 System.out.println("7: " + p.getDescricao() + ", " + p.getValor() + ", " + p.getQuantidade() + ", " + p.getTipoPerecivel() + ", " + p.getValidade() + ", " + p.getDoador().getEmail());
 
@@ -193,7 +207,43 @@ public class CatalogoDoacoes {
                         }
 
                     }
+                    if (!temDoacao)
+                        throw new IllegalArgumentException("7:ERRO:nenhuma doacao localizada.");
+                }
+            }
+            if (!achouDoador)
+                throw new IllegalArgumentException("7: Nenhum doador encontrado");
+        }
+        catch (IOException e) {
+            System.err.format("Erro de E/S: %s%n", e);
+        } catch (IllegalArgumentException e) {
+            System.err.format("Erro de E/S: %s%n", e);
+        }
+    }
 
+    public void buscaDuravelPorTipo() {
+        Path path = Paths.get("recursos","dadosentrada.txt");
+        try (BufferedReader br = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+            String linha = null;
+            while ((linha = br.readLine()) != null) {
+                try {
+                    if (TipoDuravel.tipoExiste(linha)) {
+                        boolean achouDoacaoDesteTipo = false;
+                        for (Doacao d : doacoes) {
+                            if (d instanceof Duravel duravel) {
+                                if (duravel.getTipoDuravel().name().equalsIgnoreCase(linha)) {
+                                    Doador doador = d.getDoador();
+                                    System.out.println("8: " + duravel.getDescricao() + ", " + duravel.getValor() + ", " + duravel.getQuantidade() + ", " + duravel.getTipoDuravel() + ", " + doador.getNome() + ", " + doador.getEmail());
+                                    achouDoacaoDesteTipo = true;
+                                }
+                            }
+                        }
+                        if (!achouDoacaoDesteTipo) {
+                            throw new IllegalArgumentException("8:ERRO:tipo invalido.");
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.err.println(e.getMessage());
                 }
             }
         }

@@ -31,17 +31,30 @@ public class CatalogoDoadores {
                 nome = sc.next();
                 email = sc.next();
                 int quantidadeDoacoes = 0;
+                boolean doadorRepetido = false;
+                int quantidadeRepetido = 1;
 
-                Doador doador = new Doador(nome, email, quantidadeDoacoes);
+                for (int i = 0; i < doadores.size(); i++) {
+                    Doador d = doadores.get(i);
+                    if (d.getNome().equals(nome) && d.getEmail().equals(email)){
+                        doadorRepetido = true;
+                        email = nome + quantidadeRepetido + "@email.com";
+                        quantidadeRepetido++;
+                        throw new IllegalArgumentException ("1: ERRO: Usuário repetido.");
 
-                if(doadores.contains(doador))
-                    throw new IllegalArgumentException ("1:ERRO:doador repetido.");
+                    }
+                }
 
-                doadores.add(doador);
-                System.out.println("1" + ": " + nome +", "+email);
+                if (!doadorRepetido) {
+                    Doador doador = new Doador(nome, email, quantidadeDoacoes);
+                    doadores.add(doador);
+                    System.out.println("1" + ": " + nome +", "+email);
+                }
             }
         }
         catch (IOException e) {
+            System.err.format("Erro de E/S: %s%n", e);
+        } catch (IllegalArgumentException e) {
             System.err.format("Erro de E/S: %s%n", e);
         }
     }
@@ -95,15 +108,21 @@ public class CatalogoDoadores {
         }
         catch (IOException e) {
             System.err.format("Erro de E/S: %s%n", e);
+        } catch (IllegalArgumentException e) {
+            System.err.format("Erro de E/S: %s%n", e);
         }
     }
 
     public void mostraDoadores() {
-        if (doadores.isEmpty())
-            throw new IllegalArgumentException ("6:ERRO:nenhum doador encontrado.");
-        
-        for (Doador d : doadores) {
-            System.out.println("6: " + d.getNome() + ", " + d.getEmail() + ", " + d.getQuantidadeDoacoes());
+        try{
+            if (doadores.isEmpty())
+                throw new IllegalArgumentException ("6:ERRO:nenhum doador encontrado.");
+
+            for (Doador d : doadores) {
+                System.out.println("6: " + d.getNome() + ", " + d.getEmail() + ", " + d.getQuantidadeDoacoes());
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.format("Erro de E/S: %s%n", e);
         }
     }
 }

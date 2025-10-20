@@ -20,6 +20,7 @@ public class ACMEDonations {
         passo5();
         passo6();
         passo7();
+        passo8();
     }
 
     private void passo1 () {
@@ -46,7 +47,8 @@ public class ACMEDonations {
         catalogoDoadores.mostraDoadores();
     }
 
-    private void passo7() {
+    private void passo7 () {
         catalogoDoacoes.doacaoPorDoador();
     }
+    private void passo8 () { catalogoDoacoes.buscaDuravelPorTipo(); }
 }
