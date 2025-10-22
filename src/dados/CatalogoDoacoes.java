@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class CatalogoDoacoes {
@@ -261,16 +262,14 @@ public class CatalogoDoacoes {
                 // define o charset
                 Charset.forName("UTF-8"))) {
             String linha = null;
-            if (!TipoDuravel.tipoExiste(linha)) {
-                int maiorQuantidade = 0;
-                Perecivel doacaoMaiorQuantidade = null;
-                while ((linha = br.readLine()) != null) {
-                    //boolean ehPerecivel = false;
-                    /*if (!TipoDuravel.tipoExiste(linha))
-                        throw new IllegalArgumentException("9: ERRO: tipo invalido.");*/
 
-                    for (Doacao d : doacoes) {
-                        if (d instanceof Perecivel p) {
+            int maiorQuantidade = 0;
+            Perecivel doacaoMaiorQuantidade = null;
+
+            while ((linha = br.readLine()) != null) {
+                for (Doacao d : doacoes) {
+                    if (d instanceof Perecivel p) {
+                        if (p.getTipoPerecivel().name().equalsIgnoreCase(linha)) {
                             if (p.getQuantidade() > maiorQuantidade) {
                                 doacaoMaiorQuantidade = p;
                                 maiorQuantidade = d.getQuantidade();
@@ -278,14 +277,41 @@ public class CatalogoDoacoes {
                         }
                     }
                 }
-                if (maiorQuantidade == 0) {
-                    throw new IllegalArgumentException("9: ERRO: nenhuma doacao localizada.");
-                } else {
-                    System.out.println("9: " + doacaoMaiorQuantidade.getDescricao() + ", " + doacaoMaiorQuantidade.getValor() + ", " + doacaoMaiorQuantidade.getQuantidade() + ", " + doacaoMaiorQuantidade.getTipoPerecivel() + ", " + doacaoMaiorQuantidade.getValidade() + ", " + doacaoMaiorQuantidade.getDoador().getNome() + ", " + doacaoMaiorQuantidade.getDoador().getEmail());
-                }
+            }
+            if (maiorQuantidade == 0) {
+                throw new IllegalArgumentException("9: ERRO: nenhuma doacao localizada.");
+            } else {
+                System.out.println("9: " + doacaoMaiorQuantidade.getDescricao() + ", " + doacaoMaiorQuantidade.getValor() + ", " + doacaoMaiorQuantidade.getQuantidade() + ", " + doacaoMaiorQuantidade.getTipoPerecivel() + ", " + doacaoMaiorQuantidade.getValidade() + ", " + doacaoMaiorQuantidade.getDoador().getNome() + ", " + doacaoMaiorQuantidade.getDoador().getEmail());
             }
         } catch (IOException e) {
             System.err.format("Erro de E/S: %s%n", e);
+        } catch (IllegalArgumentException e) {
+            System.err.format("Erro de E/S: %s%n", e);
+        }
+    }
+
+    public void maiorDoador() {
+        try{
+            if (doadores.getDoadores().isEmpty())
+                throw new IllegalArgumentException("10:ERRO:nenhum doador localizado.");
+
+            double maiorMontante = 0;
+            Doador doadorVencedor = null;
+
+            for (Doador doadorAtual : doadores.getDoadores()) {
+                double totalDesteDoador = 0;
+                for (Doacao d : doacoes) {
+                    if (d.getDoador().equals(doadorAtual)) {
+                        totalDesteDoador += d.getValor();
+                    }
+                }
+                if (totalDesteDoador >= maiorMontante) {
+                    maiorMontante = totalDesteDoador;
+                    doadorVencedor = doadorAtual;
+                }
+            }
+            String montanteFormatado = String.format(Locale.US, "%.2f", maiorMontante);
+            System.out.println("10: " + doadorVencedor.getNome() + ", " + doadorVencedor.getEmail() + ", " + montanteFormatado);
         } catch (IllegalArgumentException e) {
             System.err.format("Erro de E/S: %s%n", e);
         }
